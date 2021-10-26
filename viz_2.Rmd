@@ -192,7 +192,7 @@ scale_fill_discrete = scale_fill_viridis_d
 ```
 
 
-## look at data in geom
+## look at data arguments in geom
 
 ```{r}
 central_park = 
@@ -211,8 +211,45 @@ ggplot(data = waikiki, aes(x = date, y = tmax, color = name)) +
 ```
 
 
+## pathwork
 
+Remember faceting?
 
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, fill = name)) + 
+  geom_density(alpha = 0.5) + 
+  facet_grid(.~name)
+```
+
+what hapens when you want multi-panel plots but cannot facet?
+
+```{r}
+tmax_tmin_p = 
+  weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha= 0.5) + 
+  theme(legend.position = "none")
+
+prcp_dens_p = 
+  weather_df %>%
+  filter(prcp > 0) %>% 
+  ggplot(aes(x = prcp, fill = name)) +
+  geom_density(alpha = 0.5)
+
+tmax_date_p = 
+  weather_df %>% 
+  ggplot(aes(x = date, y = tmax, color = name)) +
+  geom_point() + 
+  geom_smooth(se = F) +
+  theme(legend.position = "none")
+
+#one row, three panels
+tmax_tmin_p + prcp_dens_p + tmax_date_p
+#2 rows, 3 panels
+(tmax_tmin_p + prcp_dens_p) / tmax_date_p
+ 
+```
 
 
 
