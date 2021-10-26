@@ -122,7 +122,50 @@ weather_df %>%
 ```
 
 
+## Themes
 
+Shift the Legend
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha = 0.5) +
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maximum daily temperature (C)",
+    caption = "Data from rnoaa package: temperatures in 2017"
+  ) + 
+  viridis::scale_color_viridis(
+    #change the title of the color scale
+    name = "Location",
+    discrete = T) + 
+  theme(legend.position = "bottom")
+```
+
+
+Change the overall theme
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha = 0.5) +
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maximum daily temperature (C)",
+    caption = "Data from rnoaa package: temperatures in 2017"
+  ) + 
+  viridis::scale_color_viridis(
+    #change the title of the color scale
+    name = "Location",
+    discrete = T) +
+  # in the ggthemes() package
+  #theme_bw()
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+```
 
 
 
