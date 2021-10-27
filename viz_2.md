@@ -446,19 +446,21 @@ litters_data =
     ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 ``` r
-fas_data = left_join(pup_data,litters_data, by = "litter_number")
-
+fas_data= left_join(pup_data,litters_data, by = "litter_number")
+  
+#goal - understand the distribution of which postnatal days of the (ears,eyes,pivot,walk) look like compared to different doses of treatment (control,low,mod)
 fas_data %>% 
-  select(dose, day_of_tx,starts_with("pd")) %>% 
+  select(dose,day_of_tx,starts_with("pd_")) %>% 
+  #combine the outcomes of ears,eyes,pivot,walk to dose differences
   pivot_longer(
     pd_ears:pd_walk,
     names_to = "outcome",
-    values_to = "pn_day"
-  ) %>% 
+    values_to = "pn_day") %>% 
   drop_na() %>% 
-  mutate(outcome = forcats::fct_relevel(outcome,"pd_ears", "pd_pivot","pd_walk","pd_eyes")) %>% 
+  #recorder the chronological events
+  mutate(outcome = forcats::fct_relevel(outcome, "pd_ears", "pd_pivot", "pd_walk", "pd_eyes")) %>% 
   ggplot(aes(x = dose, y = pn_day)) + 
-  geom_violin() + 
+  geom_violin(alpha = 0.5) +
   facet_grid(day_of_tx~outcome)
 ```
 
