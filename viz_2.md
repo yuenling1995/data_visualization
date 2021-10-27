@@ -314,7 +314,8 @@ prcp_dens_p =
   weather_df %>%
   filter(prcp > 0) %>% 
   ggplot(aes(x = prcp, fill = name)) +
-  geom_density(alpha = 0.5)
+  geom_density(alpha = 0.5) + 
+  theme(legend.position = "none")
 
 tmax_date_p = 
   weather_df %>% 
@@ -351,3 +352,57 @@ tmax_tmin_p + prcp_dens_p + tmax_date_p
     ## Warning: Removed 3 rows containing missing values (geom_point).
 
 ![](viz_2_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
+
+``` r
+#3 rows, 3 panels
+tmax_tmin_p / prcp_dens_p / tmax_date_p
+```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_smooth).
+
+    ## Warning: Removed 3 rows containing missing values (geom_point).
+
+![](viz_2_files/figure-gfm/unnamed-chunk-12-3.png)<!-- -->
+
+\#\#Data Manipulation
+
+Control your factors:
+
+``` r
+#reorder the plots by names
+weather_df %>% 
+  mutate(
+    name = factor(name),
+    name = forcats::fct_relevel(name, c("Waikiki_HA"))
+  ) %>% 
+  ggplot(aes(x = name, y = tmax, fill = name)) +
+  geom_violin(alpha = 0.5)
+```
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_ydensity).
+
+![](viz_2_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+What if I wanted densities for tmin and tmax simultaneously?
+
+``` r
+weather_df %>% 
+  pivot_longer(
+    tmax:tmin,
+    names_to = "observation",
+    values_to = "temperatures"
+  ) %>% 
+  ggplot(aes(x = temperatures, fill = observation)) +
+  geom_density(alpha = 0.5) + 
+  facet_grid(.~name)
+```
+
+    ## Warning: Removed 18 rows containing non-finite values (stat_density).
+
+![](viz_2_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+## 
