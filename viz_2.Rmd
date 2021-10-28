@@ -1,16 +1,33 @@
 ---
-title: "Data Visualization II"
+title: "Exploratory Analysis"
 author: Yuen
-date: 10/26/2021
+date: 10/28/2021
 output: 
   github_document
 ---
 
-```{r setup}
+##define the theme for all the ggplots!
+
+```{r setup include = FALSE}
 library(tidyverse)
-#for density and ridge plots
-library(patchwork)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = 0.6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.color = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_color.discrete = scale_color_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
 ```
+
 
 ```{r}
 #load the weather dataset
@@ -27,303 +44,41 @@ weather_df =
       USC00519397 = "Waikiki_HA",
       USS0023B17S = "Waterhole_WA"),
     tmin = tmin / 10,
-    tmax = tmax / 10) %>%
+    tmax = tmax / 10,
+    #round the date to the nearest month with floor_date()
+    month = lubridate::floor_date(date,unit = "month")) %>%
   select(name, id, everything())
 
 weather_df
 
 ```
 
-
-## Remeber this plot..?
-
-```{r}
-weather_df %>% 
-  ggplot(aes(x = tmin, y = tmax, color = name)) + 
-  geom_point(alpha = 0.5)
-```
-
-## Labels
+## group_by
 
 ```{r}
 weather_df %>% 
-  ggplot(aes(x = tmin, y = tmax, color = name)) + 
-  geom_point(alpha = 0.5) +
-  labs(
-    title = "Temperature plot",
-    x = "Minimum daily temperature (C)",
-    y = "Maximum daily temperature (C)",
-    caption = "Data from rnoaa package: temperatures in 2017"
-  )
+  group_by(name, month) 
+  #ungroup()
 ```
 
 
-## Scales
-
-Start with the same plot, x and y scales
-
-```{r}
-weather_df %>% 
-  ggplot(aes(x = tmin, y = tmax, color = name)) + 
-  geom_point(alpha = 0.5) +
-  labs(
-    title = "Temperature plot",
-    x = "Minimum daily temperature (C)",
-    y = "Maximum daily temperature (C)",
-    caption = "Data from rnoaa package: temperatures in 2017"
-  ) +
-  scale_x_continuous(
-    breaks = c(-15,0,15),
-    labels = c("-15 C", "0", "15")
-  ) + 
-  scale_y_continuous(
-    #transformation
-    trans = "sqrt",
-    position = "right"
-  )
-```
-
-
-Look at color scales
-
-```{r}
-weather_df %>% 
-  ggplot(aes(x = tmin, y = tmax, color = name)) + 
-  geom_point(alpha = 0.5) +
-  labs(
-    title = "Temperature plot",
-    x = "Minimum daily temperature (C)",
-    y = "Maximum daily temperature (C)",
-    caption = "Data from rnoaa package: temperatures in 2017"
-  ) + 
-  #define your own color
-  scale_color_hue(
-    #change the title of the color scale
-    name = "Location",
-    h = c(100,300))
-```
-
-use color palettes - viridis
-
-```{r}
-weather_df %>% 
-  ggplot(aes(x = tmin, y = tmax, color = name)) + 
-  geom_point(alpha = 0.5) +
-  labs(
-    title = "Temperature plot",
-    x = "Minimum daily temperature (C)",
-    y = "Maximum daily temperature (C)",
-    caption = "Data from rnoaa package: temperatures in 2017"
-  ) + 
-  viridis::scale_color_viridis(
-    #change the title of the color scale
-    name = "Location",
-    discrete = T)
-```
-
-
-## Themes
-
-Shift the Legend
-
-```{r}
-weather_df %>% 
-  ggplot(aes(x = tmin, y = tmax, color = name)) + 
-  geom_point(alpha = 0.5) +
-  labs(
-    title = "Temperature plot",
-    x = "Minimum daily temperature (C)",
-    y = "Maximum daily temperature (C)",
-    caption = "Data from rnoaa package: temperatures in 2017"
-  ) + 
-  viridis::scale_color_viridis(
-    #change the title of the color scale
-    name = "Location",
-    discrete = T) + 
-  theme(legend.position = "bottom")
-```
-
-
-Change the overall theme
-
-```{r}
-weather_df %>% 
-  ggplot(aes(x = tmin, y = tmax, color = name)) + 
-  geom_point(alpha = 0.5) +
-  labs(
-    title = "Temperature plot",
-    x = "Minimum daily temperature (C)",
-    y = "Maximum daily temperature (C)",
-    caption = "Data from rnoaa package: temperatures in 2017"
-  ) + 
-  viridis::scale_color_viridis(
-    #change the title of the color scale
-    name = "Location",
-    discrete = T) +
-  # in the ggthemes() package
-  #theme_bw()
-  theme_minimal() +
-  theme(legend.position = "bottom")
-
-```
-
-## Setting options
-
-```{r eval = F}
-library(tidyverse)
-
-knitr::opts_chunk$set(
-  fig.width = 6,
-  fig.asp = 0.6,
-  out.width = "90%"
-)
-
-theme_set(theme_minimal() + theme(legend.position = "bottom"))
-
-#to overwrite ggplot default coloring
-options(
-  ggplot2.continuous.color = "viridis",
-  ggplot2.continuous.fill = "viridis"
-)
-
-#to make sure every color in the plots have the viridis color palettes
-scale_color_discrete = scale_colour_viridis_d
-scale_fill_discrete = scale_fill_viridis_d
-```
-
-
-## look at data arguments in geom
-
-```{r}
-central_park = 
-  weather_df %>% 
-  filter(name == "CentralPark_NY")
-
-waikiki = 
-  weather_df %>% 
-  filter(name == "Waikiki_HA")
-
-ggplot(data = waikiki, aes(x = date, y = tmax, color = name)) +
-  geom_point() + 
-  geom_line(data = central_park)
-
-
-```
-
-
-## pathwork
-
-Remember faceting?
-
-```{r}
-weather_df %>% 
-  ggplot(aes(x = tmin, fill = name)) + 
-  geom_density(alpha = 0.5) + 
-  facet_grid(.~name)
-```
-
-what hapens when you want multi-panel plots but cannot facet?
-
-```{r}
-tmax_tmin_p = 
-  weather_df %>% 
-  ggplot(aes(x = tmin, y = tmax, color = name)) + 
-  geom_point(alpha= 0.5) + 
-  theme(legend.position = "none")
-
-prcp_dens_p = 
-  weather_df %>%
-  filter(prcp > 0) %>% 
-  ggplot(aes(x = prcp, fill = name)) +
-  geom_density(alpha = 0.5) + 
-  theme(legend.position = "none")
-
-tmax_date_p = 
-  weather_df %>% 
-  ggplot(aes(x = date, y = tmax, color = name)) +
-  geom_point() + 
-  geom_smooth(se = F) +
-  theme(legend.position = "none")
-
-#one row, three panels
-tmax_tmin_p + prcp_dens_p + tmax_date_p
-#2 rows, 3 panels
-(tmax_tmin_p + prcp_dens_p) / tmax_date_p
-#3 rows, 3 panels
-tmax_tmin_p / prcp_dens_p / tmax_date_p
- 
-```
-
-
-##Data Manipulation
-
-Control your factors:
-
-```{r}
-#reorder the plots by names
-weather_df %>% 
-  mutate(
-    name = factor(name),
-    name = forcats::fct_relevel(name, c("Waikiki_HA"))
-  ) %>% 
-  ggplot(aes(x = name, y = tmax, fill = name)) +
-  geom_violin(alpha = 0.5)
-```
-
-
-What if I wanted densities for tmin and tmax simultaneously?
-
-
-```{r}
-weather_df %>% 
-  pivot_longer(
-    tmax:tmin,
-    names_to = "observation",
-    values_to = "temperatures"
-  ) %>% 
-  ggplot(aes(x = temperatures, fill = observation)) +
-  geom_density(alpha = 0.5) + 
-  facet_grid(.~name)
-```
-
-
-## Revisit the pups:
-
-Data from the FAS study:
-
-```{r}
-pup_data = 
-  read_csv("./Data/FAS_pups.csv") %>% 
-  janitor::clean_names() %>% 
-  mutate(sex = recode(sex,`1` = "male", `2` = "female"))
-
-litters_data = 
-  read_csv("./Data/FAS_litters.csv") %>% 
-  janitor::clean_names() %>% 
-  separate(group, into = c("dose", "day_of_tx"), sep = 3)
-
-fas_data= left_join(pup_data,litters_data, by = "litter_number")
-  
-#goal - understand the distribution of which postnatal days of the (ears,eyes,pivot,walk) look like compared to different doses of treatment (control,low,mod)
-fas_data %>% 
-  select(dose,day_of_tx,starts_with("pd_")) %>% 
-  #combine the outcomes of ears,eyes,pivot,walk to dose differences
-  pivot_longer(
-    pd_ears:pd_walk,
-    names_to = "outcome",
-    values_to = "pn_day") %>% 
-  drop_na() %>% 
-  #recorder the chronological events
-  mutate(outcome = forcats::fct_relevel(outcome, "pd_ears", "pd_pivot", "pd_walk", "pd_eyes")) %>% 
-  ggplot(aes(x = dose, y = pn_day)) + 
-  geom_violin(alpha = 0.5) +
-  facet_grid(day_of_tx~outcome)
 
 
 
 
 
-```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
