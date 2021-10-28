@@ -8,7 +8,7 @@ output:
 
 ##define the theme for all the ggplots!
 
-```{r setup include = FALSE}
+```{r setup}
 library(tidyverse)
 
 knitr::opts_chunk$set(
@@ -111,12 +111,12 @@ weather_df %>%
       tmax >=5 ~ "not cold",
       TRUE ~ ""
     )
-  ) %>% 
+  ) 
   #group_by(name, cold) %>% 
   #summarize(count = n()) 
   
   #quicker way to create 2 by 2 table
-  janitor::tably(name, cold)
+  #janitor::tably(name, cold)
 ```
 
 
@@ -144,7 +144,7 @@ weather_df %>%
     mean_prcp = mean(prcp, na.rm = T),
     median_tmin = median(tmin, na.rm = T)
   ) %>% 
-  ggplot(aes(x = month, y = mean_tmax, color = name)) +
+  ggplot(aes(x = month, y = mean_tmax)) +
   geom_point() +
   geom_line()
 ```
@@ -172,11 +172,45 @@ weather_df %>%
   knitr::kable(digits = 1)
 ```
 
+## `group_by()` and `mutate()`
+
+```{r}
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(
+    mean_tmax = mean(tmax,na.rm = T),
+    centered_tmax = tmax - mean_tmax
+  ) %>% 
+  ggplot(aes(x = date, y = centered_tmax, color = name)) +
+  geom_point()
+```
 
 
+## what about window functions?
 
+ranking...
 
+```{r}
+weather_df %>% 
+  group_by(name, month) %>% 
+  #rank the minimum of max temp and display the day
+  mutate(temp_rank = min_rank(tmax)) %>% 
+  #get the coldest day of each month for each location
+  filter(temp_rank ==1)
+```
 
+lag - shift data down the rows
+
+```{r}
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(temp_change = tmax - lag(tmax)) %>% 
+  summarize(
+    #max temp difference for each location & sd
+    temp_change_max = max(temp_change, na.rm = T),
+    temp_change_sd = sd(temp_change, na.rm = T)
+  )
+```
 
 
 
