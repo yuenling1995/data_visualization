@@ -100,6 +100,24 @@ weather_df %>%
     n_days = n_distinct(date))
 ```
 
+## A digression on 2x2 tables
+
+```{r}
+weather_df %>% 
+  filter(name!= "Waikiki_HA") %>% 
+  mutate(
+    cold = case_when(
+      tmax < 5 ~ "cold",
+      tmax >=5 ~ "not cold",
+      TRUE ~ ""
+    )
+  ) %>% 
+  #group_by(name, cold) %>% 
+  #summarize(count = n()) 
+  
+  #quicker way to create 2 by 2 table
+  janitor::tably(name, cold)
+```
 
 
 
